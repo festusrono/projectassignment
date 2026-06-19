@@ -36,4 +36,11 @@ public class ProjectController {
         project.setName(projectDetails.getName());
         return ResponseEntity.ok(projectRepository.save(project));
     }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteProject(@PathVariable int id) {
+        Project project = projectRepository.findById(id).orElseThrow();
+        projectRepository.deleteFromStudentProjectByProjectId(id);
+        projectRepository.delete(project);
+        return ResponseEntity.ok().body("Project Deleted Successfully");
+    }
 }
