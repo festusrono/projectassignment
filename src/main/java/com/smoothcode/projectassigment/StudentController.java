@@ -10,7 +10,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin(origins = "${SPRING_ORIGINS:*}")
@@ -91,5 +95,44 @@ public class StudentController {
         Project project = retrieveProjectById(project_id);
         student.getProjects().remove(project);
         return ResponseEntity.ok(studentRepository.save(student));
+    }
+
+    @GetMapping("{student_id}/availableprojects")
+    public ResponseEntity<List<Project>> getStudentAvailableProjects(@PathVariable int student_id) {
+        Student student = retrieveStudentById(student_id);
+        List<Project> availableprojects = new ArrayList<Project>();
+        if (student.getProjects().size()>=maxProjectsPerStudent){
+            return ResponseEntity.ok(availableprojects);
+        }
+        List<Project> allProjects = projectRepository.findAll();
+        HashSet<Integer> projectIds = new HashSet<>();
+        for (Project p : student.getProjects()) {
+            projectIds.add(p.getId());
+        }
+        for (Project pro : allProjects) {
+            if (!projectIds.contains(pro.getId())) {
+                availableprojects.add(pro);
+            }
+        }
+        return ResponseEntity.ok(availableprojects);
+    }
+
+    @GetMapping("/assignment")
+    public ResponseEntity<HashMap<String, String>> assignProjectToStudent(){
+        HashMap<String, String> assignList = new HashMap<String, String>();
+        HashSet<Integer> projectIds = projectRepository.findAll()
+                .stream().
+                map( Project::getId)
+                .collect(Collectors.toCollection(HashSet::new));
+        List<Student> listStudent = studentRepository.findAll();
+        listStudent.sort( (Student s1, Student s2) -> Double.compare(s2.getAverage(), s1.getAverage()) );
+        for (Student s : listStudent) {
+            for (Project p : s.getProjects()) {
+                assignList.put(s.getName(), p.getName());
+                projectIds.remove(p.getId());
+                break;
+            }
+        }
+        return ResponseEntity.ok(assignList);
     }
 }
