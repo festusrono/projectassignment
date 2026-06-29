@@ -1,4 +1,4 @@
-package com.smoothcode.projectassigment;
+package com.smoothcode.projectassigment.controller;
 
 import com.smoothcode.projectassigment.model.Project;
 import com.smoothcode.projectassigment.model.Student;
@@ -100,9 +100,9 @@ public class StudentController {
     @GetMapping("{student_id}/availableprojects")
     public ResponseEntity<List<Project>> getStudentAvailableProjects(@PathVariable int student_id) {
         Student student = retrieveStudentById(student_id);
-        List<Project> availableprojects = new ArrayList<Project>();
+        List<Project> availableProjects = new ArrayList<Project>();
         if (student.getProjects().size()>=maxProjectsPerStudent){
-            return ResponseEntity.ok(availableprojects);
+            return ResponseEntity.ok(availableProjects);
         }
         List<Project> allProjects = projectRepository.findAll();
         HashSet<Integer> projectIds = new HashSet<>();
@@ -111,10 +111,10 @@ public class StudentController {
         }
         for (Project pro : allProjects) {
             if (!projectIds.contains(pro.getId())) {
-                availableprojects.add(pro);
+                availableProjects.add(pro);
             }
         }
-        return ResponseEntity.ok(availableprojects);
+        return ResponseEntity.ok(availableProjects);
     }
 
     @GetMapping("/assignment")
